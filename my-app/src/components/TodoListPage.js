@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 
-const TodoList = () => {
+const TodoListPage = () => {
 	const [todos, setTodos] = useState([]);
 	const [newTodo, setNewTodo] = useState('');
 	const [searchTerm, setSearchTerm] = useState('');
@@ -31,30 +32,6 @@ const TodoList = () => {
 			} catch (error) {
 				console.error('Error adding todo:', error);
 			}
-		}
-	};
-
-	const toggleTodoCompletion = async (todo) => {
-		try {
-			await axios.patch(`http://localhost:3000/todos/${todo.id}`, {
-				completed: !todo.completed,
-			});
-			setTodos(
-				todos.map((t) =>
-					t.id === todo.id ? { ...t, completed: !t.completed } : t,
-				),
-			);
-		} catch (error) {
-			console.error('Error updating todo:', error);
-		}
-	};
-
-	const deleteTodo = async (todo) => {
-		try {
-			await axios.delete(`http://localhost:3000/todos/${todo.id}`);
-			setTodos(todos.filter((t) => t.id !== todo.id));
-		} catch (error) {
-			console.error('Error deleting todo:', error);
 		}
 	};
 
@@ -93,13 +70,13 @@ const TodoList = () => {
 						key={todo.id}
 						className={`todo-item ${todo.completed ? 'completed' : ''}`}
 					>
-						<div className="todo-text">{todo.title}</div>
-						<div className="todo-actions">
-							<button onClick={() => toggleTodoCompletion(todo)}>
-								{todo.completed ? 'Отменить выполнение' : 'Выполнено'}
-							</button>
-							<button onClick={() => deleteTodo(todo)}>Удалить</button>
-						</div>
+						<Link to={`/task/${todo.id}`}>
+							<div className="todo-text">
+								{todo.title.length > 25
+									? `${todo.title.slice(0, 25)}...`
+									: todo.title}
+							</div>
+						</Link>
 					</li>
 				))}
 			</ul>
@@ -107,4 +84,4 @@ const TodoList = () => {
 	);
 };
 
-export default App;
+export default TodoListPage;
