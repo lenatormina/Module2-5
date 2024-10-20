@@ -1,61 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchTodos, addTodo, toggleTodo, deleteTodo } from '../actions/todoActions';
 
 const TodoList = () => {
-	const [todos, setTodos] = useState([]);
+	const dispatch = useDispatch();
+	const todos = useSelector((state) => state.todos.todos);
 	const [newTodo, setNewTodo] = useState('');
 	const [searchTerm, setSearchTerm] = useState('');
 	const [isSorted, setIsSorted] = useState(false);
 
 	useEffect(() => {
-		const fetchTodos = async () => {
-			try {
-				const response = await axios.get('http://localhost:3000/todos');
-				setTodos(response.data);
-			} catch (error) {
-				console.error('Error fetching todos:', error);
-			}
-		};
-		fetchTodos();
-	}, []);
+		dispatch(fetchTodos());
+	}, [dispatch]);
 
-	const addTodo = async () => {
-		if (newTodo.trim()) {
-			try {
-				const response = await axios.post('http://localhost:3000/todos', {
-					title: newTodo,
-					completed: false,
-				});
-				setTodos([...todos, response.data]);
-				setNewTodo('');
-			} catch (error) {
-				console.error('Error adding todo:', error);
-			}
-		}
-	};
-
-	const toggleTodoCompletion = async (todo) => {
-		try {
-			await axios.patch(`http://localhost:3000/todos/${todo.id}`, {
-				completed: !todo.completed,
-			});
-			setTodos(
-				todos.map((t) =>
-					t.id === todo.id ? { ...t, completed: !t.completed } : t,
-				),
-			);
-		} catch (error) {
-			console.error('Error updating todo:', error);
-		}
-	};
-
-	const deleteTodo = async (todo) => {
-		try {
-			await axios.delete(`http://localhost:3000/todos/${todo.id}`);
-			setTodos(todos.filter((t) => t.id !== todo.id));
-		} catch (error) {
-			console.error('Error deleting todo:', error);
-		}
+	const handleAddTodo = () => {
+		dispatch(addTodo(newTodo));
+		setNewTodo('');
 	};
 
 	const filteredTodos = todos.filter((todo) =>
@@ -76,7 +36,7 @@ const TodoList = () => {
 					onChange={(e) => setNewTodo(e.target.value)}
 					placeholder="Задача"
 				/>
-				<button onClick={addTodo}>Добавить</button>
+				<button onClick={handleAddTodo}>Добавить</button>
 				<input
 					type="text"
 					value={searchTerm}
@@ -95,10 +55,12 @@ const TodoList = () => {
 					>
 						<div className="todo-text">{todo.title}</div>
 						<div className="todo-actions">
-							<button onClick={() => toggleTodoCompletion(todo)}>
+							<button onClick={() => dispatch(toggleTodo(todo))}>
 								{todo.completed ? 'Отменить выполнение' : 'Выполнено'}
 							</button>
-							<button onClick={() => deleteTodo(todo)}>Удалить</button>
+							<button onClick={() => dispatch(deleteTodo(todo.id))}>
+								Удалить
+							</button>
 						</div>
 					</li>
 				))}
